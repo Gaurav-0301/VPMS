@@ -14,7 +14,8 @@ const registrationSchema = mongoose.Schema({
     number: {
         type: String, 
         required: true,
-        unique: true 
+        unique:false
+        
     },
     host: {
         type: String,
