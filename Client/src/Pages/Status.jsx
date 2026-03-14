@@ -1,16 +1,18 @@
 import React from 'react'
+import Backdrop from '../Components/Backdrop'
 import Navbar from '../Components/Navbar'
-import Banner from '../Sections/banner'
+import StatusPage from '../Components/StatusPage'
 import Footer from '../Components/Footer'
 
-const UserHome = () => {
+const Status = () => {
   return (
-    <>
+    <div>
+      <Backdrop/>
       <Navbar/>
-      <Banner/>
+      <StatusPage/>
       <Footer opt1={"/"} opt2={"/book"} opt3={"/status"}/>
-    </>
+    </div>
   )
 }
 
-export default UserHome
+export default Status

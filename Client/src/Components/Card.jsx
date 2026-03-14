@@ -1,6 +1,6 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom';
-
+import { Link, useNavigate } from 'react-router-dom';
+Link
 const Card = ({ title, desc, btn,link}) => {
   const navigate=useNavigate();
   const handleclick=()=>{
@@ -26,10 +26,10 @@ const Card = ({ title, desc, btn,link}) => {
 
         {/* Call to Action Button */}
         <div className="pt-4">
-          <button className="px-6 py-2.5 bg-indigo-600 text-white font-semibold rounded-lg shadow-md transition-all duration-300 hover:bg-indigo-700 hover:shadow-indigo-500/25 active:scale-95"
-          onClick={handleclick}>
+          <Link className="px-6 py-2.5 bg-indigo-600 text-white font-semibold rounded-lg shadow-md transition-all duration-300 hover:bg-indigo-700 hover:shadow-indigo-500/25 active:scale-95"
+          to={link}>
             {btn}
-          </button>
+          </Link>
         </div>
       </div>
     </div>

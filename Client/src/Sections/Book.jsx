@@ -10,7 +10,7 @@ const Book = () => {
     <Backdrop/>
     <Navbar/>
     <VisitorRegistration/>
-    <Footer/>
+    <Footer opt1={"/"} opt2={"/book"} opt3={"/status"}/>
       
     </>
   )

@@ -1,7 +1,8 @@
 import React from 'react';
 import { Shield, Github, Twitter, Linkedin, Mail } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-const Footer = () => {
+const Footer = (props) => {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -29,9 +30,9 @@ const Footer = () => {
           <div className="space-y-4">
             <h4 className="font-semibold text-slate-900">Platform</h4>
             <ul className="space-y-2 text-sm text-slate-600">
-              <li><a href="/" className="hover:text-indigo-600 transition-colors">Home</a></li>
-              <li><a href="/book" className="hover:text-indigo-600 transition-colors">Book</a></li>
-              <li><a href="/status" className="hover:text-indigo-600 transition-colors">Status</a></li>
+              <li><Link to={props.opt1} className="hover:text-indigo-600 transition-colors">Home</Link></li>
+              <li><Link to={props.opt2} className="hover:text-indigo-600 transition-colors">Book</Link></li>
+              <li><Link to={props.opt3} className="hover:text-indigo-600 transition-colors">Status</Link></li>
             </ul>
           </div>
 
