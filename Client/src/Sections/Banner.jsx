@@ -1,7 +1,10 @@
 import React from 'react';
 import Card from '../Components/Card';
+import VisitorRegistration from '../Components/VisitorRegistration';
+
 
 const Banner = () => {
+  
   return (
     // Removed justify-center, added pt-12 to control exact top spacing
     <div className="relative min-h-screen flex flex-col items-center justify-start px-6 pt-12 md:pt-20 overflow-hidden bg-slate-50">
@@ -35,6 +38,7 @@ const Banner = () => {
               btn={"Book Pass"} 
               title={"New Visitor"} 
               desc={"Register your visit and request instant approval from the host."} 
+              link={"/book"} 
               className="relative h-full bg-white/70 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-8"
             />
           </div>
@@ -46,6 +50,7 @@ const Banner = () => {
               btn={"Check Status"} 
               title={"Track Request"} 
               desc={"View your active digital pass or monitor your approval status."} 
+              link={"/status"} 
               className="relative h-full bg-white/70 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-8"
             />
           </div>

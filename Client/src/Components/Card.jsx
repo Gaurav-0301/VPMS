@@ -1,6 +1,11 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom';
 
-const Card = ({ title, desc, btn }) => {
+const Card = ({ title, desc, btn,link}) => {
+  const navigate=useNavigate();
+  const handleclick=()=>{
+    navigate({link})
+  }
   return (
     <div className="relative group overflow-hidden rounded-2xl border bg-white border-black p-8 transition-all duration-300 hover:shadow-2xl hover:bg-white/15">
      
@@ -21,7 +26,8 @@ const Card = ({ title, desc, btn }) => {
 
         {/* Call to Action Button */}
         <div className="pt-4">
-          <button className="px-6 py-2.5 bg-indigo-600 text-white font-semibold rounded-lg shadow-md transition-all duration-300 hover:bg-indigo-700 hover:shadow-indigo-500/25 active:scale-95">
+          <button className="px-6 py-2.5 bg-indigo-600 text-white font-semibold rounded-lg shadow-md transition-all duration-300 hover:bg-indigo-700 hover:shadow-indigo-500/25 active:scale-95"
+          onClick={handleclick}>
             {btn}
           </button>
         </div>
