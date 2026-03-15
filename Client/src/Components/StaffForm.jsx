@@ -1,30 +1,40 @@
 import React, { useState } from 'react';
-import { User, Mail, Shield, Building,UserPlus} from 'lucide-react';
+import { User, Mail, Shield, Building, UserPlus, Lock } from 'lucide-react';
+import axios from 'axios';
 
 const StaffForm = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password:'',
+    password: '',
     role: '',
     dept: ''
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Saving Staff:", formData);
     
-    // Logic for frontend only: 
-    // 1. Trigger success to parent (to update local state)
-    if (onSuccess) onSuccess(formData);
-    // 2. Close the modal
-    if (onClose) onClose();
+    try {
+      const response = await axios.post("http://localhost:2724/staff/register", formData);
+      const result = response.data;
+
+      if (result.success) {
+        alert(result.message);
+        onSuccess(result.data); 
+        if (onClose) onClose();
+      } else {
+        alert(result.message);
+      }
+    } catch (error) {
+      console.error("staffForm handlesubmit error", error);
+      alert(error.response?.data?.message || "Registration failed");
+      if (onClose) onClose();
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className=" text-black space-y-6">
+    <form onSubmit={handleSubmit} className="text-black space-y-6">
       <div className="space-y-4">
-        {/* Name Input */}
         <div className="relative">
           <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
@@ -36,7 +46,6 @@ const StaffForm = ({ onClose, onSuccess }) => {
           />
         </div>
 
-        {/* Email Input */}
         <div className="relative">
           <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
@@ -47,12 +56,12 @@ const StaffForm = ({ onClose, onSuccess }) => {
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           />
         </div>
-         {/* Name Input */}
+
         <div className="relative">
-          <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
             required
-            type="text"
+            type="password"
             placeholder="Password"
             className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -60,21 +69,21 @@ const StaffForm = ({ onClose, onSuccess }) => {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          {/* Role Selection */}
           <div className="relative">
             <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <select
+              required
               className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium appearance-none"
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              value={formData.role}
             >
-              <option >Role</option> 
+              <option value="" disabled>Role</option>
               <option value="Host">Host</option>
               <option value="Admin">Admin</option>
               <option value="Security">Security</option>
             </select>
           </div>
 
-          {/* Department Input */}
           <div className="relative">
             <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input

@@ -9,7 +9,8 @@ const cors = require("cors");
 app.use(cors());
 
 const router = require("./routes/user.routes");
-
+const regRouter = require("./routes/staff.reg.routes");
+const recordRouter=require('./routes/record.count.routes')
 const PORT = process.env.PORT || 5000;
 
 
@@ -19,6 +20,8 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 
 app.use("/", router);
+app.use("/", regRouter);
+app.use("/", recordRouter);
 
 app.get("/", (req, res) => {
     res.status(200).send("Hello Jee");

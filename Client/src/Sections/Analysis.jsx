@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, ShieldCheck, Download, Trash2, Search, ArrowLeft, UserCheck, UserPlus, X } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import StaffForm from '../Components/StaffForm'; // Ensure this path matches your file structure
+import StaffForm from '../Components/StaffForm';
+import axios from 'axios';
 
 const Analysis = () => {
   const [currentView, setCurrentView] = useState('visitors'); 
@@ -9,19 +10,15 @@ const Analysis = () => {
   const [logsDownloaded, setLogsDownloaded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [visitorCount, setVisitorCount] = useState(0);
+  const [staffCount, setStaffCount] = useState({
+    admin: 0,
+    host: 0,
+    security: 0
+  });
 
-  const [visitors, setVisitors] = useState([
-    { id: 101, name: "John Doe", number: "9876543210", host: "IT_A", status: "Approved", time: "10:45 AM" },
-    { id: 102, name: "Jane Smith", number: "8888888888", host: "Admin_HQ", status: "Pending", time: "11:20 AM" },
-    { id: 103, name: "Rahul Verma", number: "9988776655", host: "IT_B", status: "Rejected", time: "12:05 PM" },
-  ]);
-
-  const [staffData, setStaffData] = useState([
-    { id: 1, name: "Gaurav Kakpure", email: "gaurav@ycce.in", role: "Admin", dept: "Management" },
-    { id: 2, name: "Harsh Vardhan", email: "harsh@ycce.in", role: "Host", dept: "IT" },
-    { id: 3, name: "Ayush Kumar", email: "ayush@ycce.in", role: "Host", dept: "HR" },
-    { id: 4, name: "Security Team A", email: "sec.a@ycce.in", role: "Security", dept: "Gate 1" },
-  ]);
+  const [visitors, setVisitors] = useState([]);
+  const [staffData, setStaffData] = useState([]);
 
   const filteredStaff = selectedRole 
     ? staffData.filter(s => s.role === selectedRole)
@@ -39,17 +36,39 @@ const Analysis = () => {
   };
 
   const handleAddNewStaff = (newStaff) => {
-    const entry = { ...newStaff, id: Date.now() };
-    setStaffData([...staffData, entry]);
+    setStaffData(prev => [...prev, newStaff]);
     setIsModalOpen(false); 
   };
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [visitorRes, staffCountRes, visitorDataRes, staffDataRes] = await Promise.all([
+          axios.get("http://localhost:2724/numberofvisitor"),
+          axios.get("http://localhost:2724/numberofstaff"),
+          axios.get("http://localhost:2724/visitordata"), // Ensure these endpoints exist
+          axios.get("http://localhost:2724/staffdata")
+        ]);
+
+        if (visitorRes.data.success) setVisitorCount(visitorRes.data.data);
+        if (staffCountRes.data.success) setStaffCount(staffCountRes.data.counts);
+        if (visitorDataRes.data.success) setVisitors(visitorDataRes.data.data);
+        if (staffDataRes.data.success) setStaffData(staffDataRes.data.data);
+        
+      } catch (error) {
+        console.error("Dashboard Stats Fetch Error:", error);
+      }
+    };
+
+    fetchDashboardData();
+  }, []); // Empty dependency array prevents infinite loops
 
   return (
     <div className="p-8 bg-slate-50 min-h-screen relative">
       
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200 px-4">
-          <div className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl overflow-hidden relative animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl overflow-hidden relative">
             <button 
               onClick={() => setIsModalOpen(false)}
               className="absolute top-6 right-6 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-all z-10"
@@ -57,7 +76,7 @@ const Analysis = () => {
               <X size={20} className="text-slate-600" />
             </button>
 
-            <div className="p-10">
+            <div className="p-10 text-black">
               <div className="mb-6">
                 <h2 className="text-2xl font-black text-slate-800 tracking-tight">Add New Staff</h2>
                 <p className="text-slate-500 text-sm font-medium">Create credentials for Admins, Hosts, or Security.</p>
@@ -102,7 +121,7 @@ const Analysis = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <RoleCard 
           title="Total Visitors" 
-          count={visitors.length} 
+          count={visitorCount}
           icon={<Users size={32} />}
           color="bg-blue-600" 
           isActive={currentView === 'visitors'}
@@ -110,7 +129,7 @@ const Analysis = () => {
         />
         <RoleCard 
           title="Active Admins" 
-          count={staffData.filter(s => s.role === 'Admin').length} 
+          count={staffCount?.admin || 0} 
           icon={<ShieldCheck size={32} />}
           color="bg-indigo-600" 
           isActive={selectedRole === 'Admin'}
@@ -118,7 +137,7 @@ const Analysis = () => {
         />
         <RoleCard 
           title="Active Hosts" 
-          count={staffData.filter(s => s.role === 'Host').length} 
+          count={staffCount?.host || 0} 
           icon={<UserCheck size={32} />}
           color="bg-violet-500" 
           isActive={selectedRole === 'Host'}
@@ -126,7 +145,7 @@ const Analysis = () => {
         />
         <RoleCard 
           title="Security Team" 
-          count={staffData.filter(s => s.role === 'Security').length} 
+          count={staffCount?.security || 0} 
           icon={<ShieldCheck size={32} />}
           color="bg-emerald-500" 
           isActive={selectedRole === 'Security'}
@@ -139,11 +158,11 @@ const Analysis = () => {
           <div className="flex items-center gap-4">
             {currentView === 'staff' && (
               <button onClick={() => {setCurrentView('visitors'); setSelectedRole(null);}} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-all">
-                <ArrowLeft size={20} />
+                <ArrowLeft className="text-black"size={20} />
               </button>
             )}
             <h2 className="text-2xl font-bold text-slate-800">
-              {currentView === 'visitors' ? "Today's Visitor Logs" : `${selectedRole} Directory`}
+              {currentView === 'visitors' ? "Today's Visitor Logs" : `${selectedRole} Logs`}
             </h2>
           </div>
           
@@ -154,7 +173,7 @@ const Analysis = () => {
               placeholder={`Search ${currentView}...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 pr-6 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-80 font-medium"
+              className="pl-12 pr-6 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-80 font-medium text-black"
             />
           </div>
         </div>
@@ -182,11 +201,11 @@ const Analysis = () => {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {currentView === 'visitors' ? (
-                visitors.map(v => (
-                  <tr key={v.id} className="hover:bg-slate-50/50 transition-colors">
+                visitors.map((v, index) => (
+                  <tr key={v._id || index} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 font-bold text-lg">{v.name[0]}</div>
+                        <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 font-bold text-lg">{v.name?.[0]}</div>
                         <div>
                           <p className="font-bold text-slate-800">{v.name}</p>
                           <p className="text-xs font-medium text-slate-400">{v.number}</p>
@@ -202,15 +221,15 @@ const Analysis = () => {
                         {v.status}
                       </span>
                     </td>
-                    <td className="px-8 py-6 text-slate-500 font-bold">{v.time}</td>
+                    <td className="px-8 py-6 text-slate-500 font-bold">{new Date(v.createdAt).toLocaleTimeString()}</td>
                   </tr>
                 ))
               ) : (
-                filteredStaff.map(s => (
-                  <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
+                filteredStaff.map((s, index) => (
+                  <tr key={s._id || index} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-lg ${s.role === 'Admin' ? 'bg-indigo-600' : 'bg-slate-400'}`}>{s.name[0]}</div>
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-lg ${s.role === 'Admin' ? 'bg-indigo-600' : 'bg-slate-400'}`}>{s.name?.[0]}</div>
                         <div>
                           <p className="font-bold text-slate-800">{s.name}</p>
                           <p className="text-xs font-medium text-slate-400">{s.email}</p>
