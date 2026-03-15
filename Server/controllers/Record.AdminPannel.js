@@ -76,10 +76,54 @@ const staffData = async (req, res) => {
     }
 };
 
+
+const deletevisitors=async(req,res)=>{
+try {
+    await reg.deleteMany({});
+    return res.json({
+        success:true,
+        message:"All Visitor Data Remove Successfully"
+    })
+} catch (error) {
+    console.log("Error in deleteVisitor",error);
+     return res.json({
+        success:false,
+        message:"Error in deleteVisitor"
+    })
+}
+
+
+}
+
+const deleteStaff = async (req, res) => {
+  try {
+     const id = req.params.id;
+      await staff.findByIdAndDelete(id);
+       return res.json({
+      success: true,
+      message: "Removed successfully!!"
+    });
+
+  } catch (error) {
+
+    console.log("Error in deleteStaff:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Error deleting staff"
+    });
+
+  }
+};
+
+
 // Export all functions correctly as an object
 module.exports = {
     CountVisitor,
     CountStaff,
     visitorData,
-    staffData
+    staffData,
+    deletevisitors,
+    deleteStaff
 };
+
