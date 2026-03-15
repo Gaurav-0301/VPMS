@@ -1,24 +1,42 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Camera, User, Phone, Mail, FileText, Users, X } from 'lucide-react';
 import axios from 'axios';
 
 const VisitorRegistration = () => {
-  // 1. State Management - Keys now match Mongoose schema exactly
   const [formData, setFormData] = useState({
     name: '',
     purpose: '',
     number: '',
     host: '',
     email: '',
-    url: null // This stores the Base64 photo string
+    url: null 
   });
 
+  // State for dynamic hosts
+  const [availableHosts, setAvailableHosts] = useState([]);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [loading, setLoading] = useState(false);
+  
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // 2. Camera Logic
+  // --- Fetch Hosts from Database ---
+  useEffect(() => {
+    const fetchHosts = async () => {
+      try {
+        const response = await axios.get("http://localhost:2724/staffdata");
+        if (response.data.success) {
+          // Only show staff members who are registered as 'Host'
+          const hostsOnly = response.data.data.filter(staff => staff.role === 'Host');
+          setAvailableHosts(hostsOnly);
+        }
+      } catch (error) {
+        console.error("Failed to load hosts:", error);
+      }
+    };
+    fetchHosts();
+  }, []);
+
   const startCamera = async () => {
     setIsCameraActive(true);
     try {
@@ -26,12 +44,9 @@ const VisitorRegistration = () => {
         video: { facingMode: "user" }, 
         audio: false 
       });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
+      if (videoRef.current) videoRef.current.srcObject = stream;
     } catch (err) {
-      console.error("Camera access denied:", err);
-      alert("Please allow camera access to take a photo.");
+      alert("Please allow camera access.");
       setIsCameraActive(false);
     }
   };
@@ -44,53 +59,31 @@ const VisitorRegistration = () => {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
       const imageData = canvas.toDataURL('image/png');
-      // FIXED: Save to 'url' key to match the validation and schema
       setFormData({ ...formData, url: imageData });
       
       const stream = video.srcObject;
-      const tracks = stream.getTracks();
-      tracks.forEach(track => track.stop());
+      stream.getTracks().forEach(track => track.stop());
       setIsCameraActive(false);
     }
   };
 
-  // 3. API Submission Logic
   const handleVisit = async (e) => {
     e.preventDefault();
-    
-    // Debugging: Check what is actually being sent
-    console.log("Submitting Data:", formData);
-
-    // Validation
     if (!formData.name || !formData.number || !formData.url || !formData.host) {
       alert("Please fill all required fields and capture a photo.");
       return;
     }
 
     setLoading(true);
-
     try {
-      // Send formData directly since keys already match schema
       const response = await axios.post(`http://localhost:2724/register`, formData);
-      
       if (response.data.success) {
-        alert("Visit booked successfully! Your Ref ID is: " + response.data.data.refId);
-        // Reset Form
-        setFormData({
-          name: '',
-          purpose: '',
-          number: '',
-          host: '',
-          email: '',
-          url: null
-        });
+        alert("Visit booked! Ref ID: " + response.data.data.refId);
+        setFormData({ name: '', purpose: '', number: '', host: '', email: '', url: null });
       }
     } catch (error) {
-      console.error("Registration error", error);
-      const errorMsg = error.response?.data?.message || "Registration error. Please check your connection.";
-      alert(errorMsg);
+      alert(error.response?.data?.message || "Registration error.");
     } finally {
       setLoading(false);
     }
@@ -103,15 +96,7 @@ const VisitorRegistration = () => {
         <X className="text-slate-400 cursor-pointer hover:text-slate-600" />
       </div>
 
-      <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl mb-8 flex gap-3">
-        <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">i</div>
-        <p className="text-sm text-blue-700 font-medium">
-          <span className="font-bold text-blue-800">Process:</span> Your host will receive this request for approval.
-        </p>
-      </div>
-
       <form onSubmit={handleVisit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Input Fields */}
         <div className="space-y-4">
           <InputField 
             icon={<User size={18}/>} 
@@ -135,6 +120,7 @@ const VisitorRegistration = () => {
             onChange={(val) => setFormData({...formData, number: val})}
           />
           
+          {/* Dynamic Host Dropdown */}
           <div className="space-y-1.5">
              <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
                 <Users size={18}/> Select Host
@@ -146,8 +132,11 @@ const VisitorRegistration = () => {
                className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
              >
                 <option value="">Select an employee</option>
-                <option value="IT_A">IT_A</option>
-                <option value="Admin_HQ">Admin HQ</option>
+                {availableHosts.map((host) => (
+                  <option key={host._id} value={host.name}>
+                    {host.name} ({host.dept})
+                  </option>
+                ))}
              </select>
           </div>
 
@@ -221,4 +210,4 @@ const InputField = ({ icon, label, placeholder, value, onChange }) => (
   </div>
 );
 
-export default VisitorRegistration;
+export default VisitorRegistration; 
