@@ -13,7 +13,7 @@ const Status = () => {
   const handleSearch=async()=>{
     try {
       console.log(searchQuery)
-     const response= await axios.get(`http://localhost:2724/status/${searchQuery}`);
+     const response= await axios.get(` https://vpms-4neo.onrender.com/status/${searchQuery}`);
      const result= await response.data;
           console.log(result)
      if(result.success){

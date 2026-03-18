@@ -15,7 +15,7 @@ const StaffForm = ({ onClose, onSuccess }) => {
     e.preventDefault();
     
     try {
-      const response = await axios.post("http://localhost:2724/staff/register", formData);
+      const response = await axios.post(" https://vpms-4neo.onrender.com/staff/register", formData);
       const result = response.data;
 
       if (result.success) {

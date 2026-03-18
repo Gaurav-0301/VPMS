@@ -21,10 +21,10 @@ const Analysis = () => {
   const fetchData = async () => {
     try {
       const [vCount, sCount, vData, sData] = await Promise.all([
-        axios.get("http://localhost:2724/numberofvisitor"),
-        axios.get("http://localhost:2724/numberofstaff"),
-        axios.get("http://localhost:2724/visitordata"), 
-        axios.get("http://localhost:2724/staffdata")
+        axios.get(" https://vpms-4neo.onrender.com/numberofvisitor"),
+        axios.get(" https://vpms-4neo.onrender.com/numberofstaff"),
+        axios.get(" https://vpms-4neo.onrender.com/visitordata"), 
+        axios.get(" https://vpms-4neo.onrender.com/staffdata")
       ]);
 
       if (vCount.data.success) setVisitorCount(vCount.data.data);
@@ -94,7 +94,7 @@ const Analysis = () => {
   const deleteStaff = async (id) => {
     if (!window.confirm("Remove access for this staff member?")) return;
     try {
-      const res = await axios.delete(`http://localhost:2724/deletestaff/${id}`);
+      const res = await axios.delete(` https://vpms-4neo.onrender.comdeletestaff/${id}`);
       if (res.data.success) {
         setStaffData(prev => prev.filter(s => s._id !== id));
         fetchData();
@@ -106,7 +106,7 @@ const Analysis = () => {
   const deletevisitor = async () => {
     if (!window.confirm("Permanently delete ALL visitor logs?")) return;
     try {
-      const res = await axios.delete(`http://localhost:2724/deletevisitors`);
+      const res = await axios.delete(` https://vpms-4neo.onrender.com/deletevisitors`);
       if (res.data.success) {
         setVisitors([]);
         setVisitorCount(0);

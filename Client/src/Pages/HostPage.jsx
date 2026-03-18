@@ -17,7 +17,7 @@ const HostPage = () => {
       const currentHostId = localStorage.getItem("userId");
 
       // 2. Attach it to the request so the backend knows who is asking
-      const response = await axios.get(`http://localhost:2724/visitordata?hostId=${currentHostId}`);
+      const response = await axios.get(` https://vpms-4neo.onrender.com/visitordata?hostId=${currentHostId}`);
       
       if (response.data.success) {
         setVisitors(response.data.data);
@@ -31,7 +31,7 @@ const HostPage = () => {
 
   const handleStatusUpdate = async (id, newStatus) => {
     try {
-      const response = await axios.put(`http://localhost:2724/statusupdate/${id}`, { 
+      const response = await axios.put(` https://vpms-4neo.onrender.com/statusupdate/${id}`, { 
         status: newStatus 
       });
 

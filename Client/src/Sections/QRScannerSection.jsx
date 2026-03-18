@@ -32,7 +32,7 @@ const QRScannerSection = ({ onMovement }) => {
             setLoading(true);
             try {
               // Standardized endpoint
-              const res = await axios.get(`http://localhost:2724/securitycheck/${text}`);
+              const res = await axios.get(` https://vpms-4neo.onrender.com/securitycheck/${text}`);
               if (res.data.success) {
                 setVisitor({ ...res.data.visitor, refId: text });
                 setIsVerifying(true);

@@ -11,7 +11,7 @@ const SecurityTerminal = () => {
   const processMovement = async (action, refId) => {
     try {
       // Standardized to port 2724 to match your backend
-      const res = await axios.put(`http://localhost:2724/visitor/movement/${refId}`, { action });
+      const res = await axios.put(` https://vpms-4neo.onrender.com/visitor/movement/${refId}`, { action });
       
       if (res.data.success) {
         setStats(prev => {

@@ -25,7 +25,7 @@ const VisitorRegistration = () => {
   useEffect(() => {
     const fetchHosts = async () => {
       try {
-        const response = await axios.get("http://localhost:2724/staffdata");
+        const response = await axios.get(" https://vpms-4neo.onrender.com/staffdata");
         if (response.data.success) {
           const hostsOnly = response.data.data.filter(staff => staff.role === 'Host');
           setAvailableHosts(hostsOnly);
@@ -78,7 +78,7 @@ const VisitorRegistration = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post(`http://localhost:2724/register`, formData);
+      const response = await axios.post(` https://vpms-4neo.onrender.com/register`, formData);
       if (response.data.success) {
         toast("Visit booked! Ref ID: " + response.data.data.refId);
         // Reset form including hostId
