@@ -19,15 +19,15 @@ const StaffForm = ({ onClose, onSuccess }) => {
       const result = response.data;
 
       if (result.success) {
-        toast(result.message);
+        toast.success(result.message);
         onSuccess(result.data); 
         if (onClose) onClose();
       } else {
-        toast(result.message);
+        toast.success(result.message);
       }
     } catch (error) {
       console.error("staffForm handlesubmit error", error);
-      toast(error.response?.data?.message || "Registration failed");
+      toast.error(error.response?.data?.message || "Registration failed");
       if (onClose) onClose();
     }
   };

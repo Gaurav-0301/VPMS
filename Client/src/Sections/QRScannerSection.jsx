@@ -38,7 +38,7 @@ const QRScannerSection = ({ onMovement }) => {
                 setIsVerifying(true);
               }
             } catch (err) {
-              toast("Invalid Pass");
+              toast.error("Invalid Pass");
               if (isMounted.current) html5QrCode.resume();
             } finally {
               if (isMounted.current) setLoading(false);

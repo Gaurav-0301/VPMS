@@ -41,12 +41,12 @@ const HostPage = () => {
         );
         
         if (newStatus === "Approved") {
-        toast("Meeting approved! Mail sent to visitor.");
+        toast.success("Meeting approved! Mail sent to visitor.");
         }
       }
     } catch (error) {
       console.error("handleStatus error:", error);
-      toast("Failed to update status. Please try again.");
+      toast.error("Failed to update status. Please try again.");
     }
   };
 

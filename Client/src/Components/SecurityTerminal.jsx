@@ -27,7 +27,7 @@ const SecurityTerminal = () => {
       }
     } catch (err) {
       const msg = err.response?.data?.message || "Movement update failed";
-      toast(msg);
+      toast.error(msg);
       throw new Error(msg); // Stops the scanner from closing the modal on error
     }
   };

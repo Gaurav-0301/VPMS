@@ -72,7 +72,7 @@ const VisitorRegistration = () => {
     e.preventDefault();
     // Validation: Now checking for hostId specifically
     if (!formData.name || !formData.number || !formData.url || !formData.hostId) {
-    toast("Please fill all required fields, select a host, and capture a photo.");
+    toast.error("Please fill all required fields, select a host, and capture a photo.");
       return;
     }
 
@@ -80,12 +80,12 @@ const VisitorRegistration = () => {
     try {
       const response = await axios.post(` https://vpms-4neo.onrender.com/register`, formData);
       if (response.data.success) {
-        toast("Visit booked! Ref ID: " + response.data.data.refId);
+        toast.success("Visit booked! Ref ID: " + response.data.data.refId);
         // Reset form including hostId
         setFormData({ name: '', purpose: '', number: '', host: '', hostId: '', email: '', url: null });
       }
     } catch (error) {
-      toast(error.response?.data?.message || "Registration error.");
+      toast.error(error.response?.data?.message || "Registration error.");
     } finally {
       setLoading(false);
     }

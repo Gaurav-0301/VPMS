@@ -1,12 +1,10 @@
 import React from 'react'
-import { Link, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { Link} from 'react-router-dom';
+
 Link
 const Card = ({ title, desc, btn,link}) => {
-  const navigate=useNavigate();
-  const handleclick=()=>{
-    navigate({link})
-  }
+ 
+  
   return (
     <div className="relative group overflow-hidden rounded-2xl border bg-white border-black p-8 transition-all duration-300 hover:shadow-2xl hover:bg-white/15">
      

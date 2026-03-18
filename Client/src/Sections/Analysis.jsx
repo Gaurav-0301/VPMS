@@ -84,10 +84,10 @@ const Analysis = () => {
       XLSX.writeFile(workbook, fileName);
       
       setLogsDownloaded(true);
-      toast("Excel generated successfully! All image data was excluded to prevent errors.");
+      toast.success("Excel generated successfully! All image data was excluded to prevent errors.");
     } catch (error) {
       console.error("Export Logic Error:", error);
-      toast("Critical Export Error. See console for details.");
+      toast.error("Critical Export Error. See console for details.");
     }
   };
 
@@ -98,7 +98,7 @@ const Analysis = () => {
       if (res.data.success) {
         setStaffData(prev => prev.filter(s => s._id !== id));
         fetchData();
-        toast(res.data.message);
+        toast.success(res.data.message);
       }
     } catch (error) { console.error("Delete Staff Error", error); }
   };
@@ -110,7 +110,7 @@ const Analysis = () => {
       if (res.data.success) {
         setVisitors([]);
         setVisitorCount(0);
-        toast(res.data.message);
+        toast.success(res.data.message);
       }
     } catch (error) { console.error("Delete Visitor Error", error); }
   };
