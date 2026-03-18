@@ -1,4 +1,5 @@
 import React from 'react'
+import { Toaster } from 'react-hot-toast';
 import { Route, Routes, Navigate } from 'react-router-dom'
 
 import Book from './Pages/Book'
@@ -15,6 +16,7 @@ import ProtectedRoute from './Components/ProtectedRoutes'
 const App = () => {
   return (
     <>
+    <Toaster position="top-right" reverseOrder={false} />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<User />} />

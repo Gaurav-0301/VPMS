@@ -6,9 +6,9 @@ import Footer from '../Components/Footer'
 const Host = () => {
   return (
   <>
-    <Navbar />
+    <Navbar opt1={"Host"}  link1={"/host"} />
       <HostPage/>
-      <Footer/>
+      <Footer opt1={"Host"}  link1={"/host"}/>
     </>
   )
 }

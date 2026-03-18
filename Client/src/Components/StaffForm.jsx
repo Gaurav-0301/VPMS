@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, Mail, Shield, Building, UserPlus, Lock } from 'lucide-react';
 import axios from 'axios';
-
+import toast from 'react-hot-toast';
 const StaffForm = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -19,15 +19,15 @@ const StaffForm = ({ onClose, onSuccess }) => {
       const result = response.data;
 
       if (result.success) {
-        alert(result.message);
+        toast(result.message);
         onSuccess(result.data); 
         if (onClose) onClose();
       } else {
-        alert(result.message);
+        toast(result.message);
       }
     } catch (error) {
       console.error("staffForm handlesubmit error", error);
-      alert(error.response?.data?.message || "Registration failed");
+      toast(error.response?.data?.message || "Registration failed");
       if (onClose) onClose();
     }
   };

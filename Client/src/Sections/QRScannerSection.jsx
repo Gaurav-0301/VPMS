@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { LogIn, LogOut, QrCode, UserCheck, Loader2 } from "lucide-react";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const QRScannerSection = ({ onMovement }) => {
   const [visitor, setVisitor] = useState(null);
@@ -37,7 +38,7 @@ const QRScannerSection = ({ onMovement }) => {
                 setIsVerifying(true);
               }
             } catch (err) {
-              alert("Invalid Pass");
+              toast("Invalid Pass");
               if (isMounted.current) html5QrCode.resume();
             } finally {
               if (isMounted.current) setLoading(false);

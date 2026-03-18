@@ -6,9 +6,9 @@ import Analysis from '../Sections/Analysis'
 const AdminPannel = () => {
   return (
     <>
-      <Navbar opt1={"AdminPannel"} opt2={"Host"} opt3={"SecurityTerminal"} link1={"/adminpannel"} link2={"/host"} link3={"/securityterminal"}/>
+      <Navbar opt1={"AdminPannel"}  link1={"/admin"} />
       <Analysis/>
-      <Footer/>
+      <Footer opt1={"AdminPannel"}  link1={"/admin"} />
     </>
   )
 }

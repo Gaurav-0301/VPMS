@@ -3,6 +3,7 @@ import { Users, ShieldCheck, Download, Trash2, Search, ArrowLeft, UserCheck, Use
 import * as XLSX from 'xlsx';
 import StaffForm from '../Components/StaffForm';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const Analysis = () => {
   const [currentView, setCurrentView] = useState('visitors'); 
@@ -44,7 +45,7 @@ const Analysis = () => {
     const dataToExport = currentView === 'visitors' ? visitors : staffData;
 
     if (!dataToExport || dataToExport.length === 0) {
-      alert(`No ${currentView} records available to export.`);
+      toast(`No ${currentView} records available to export.`);
       return;
     }
 
@@ -83,10 +84,10 @@ const Analysis = () => {
       XLSX.writeFile(workbook, fileName);
       
       setLogsDownloaded(true);
-      alert("Excel generated successfully! All image data was excluded to prevent errors.");
+      toast("Excel generated successfully! All image data was excluded to prevent errors.");
     } catch (error) {
       console.error("Export Logic Error:", error);
-      alert("Critical Export Error. See console for details.");
+      toast("Critical Export Error. See console for details.");
     }
   };
 
@@ -97,7 +98,7 @@ const Analysis = () => {
       if (res.data.success) {
         setStaffData(prev => prev.filter(s => s._id !== id));
         fetchData();
-        alert(res.data.message);
+        toast(res.data.message);
       }
     } catch (error) { console.error("Delete Staff Error", error); }
   };
@@ -109,7 +110,7 @@ const Analysis = () => {
       if (res.data.success) {
         setVisitors([]);
         setVisitorCount(0);
-        alert(res.data.message);
+        toast(res.data.message);
       }
     } catch (error) { console.error("Delete Visitor Error", error); }
   };

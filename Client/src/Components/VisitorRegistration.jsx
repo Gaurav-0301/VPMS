@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, User, Phone, Mail, FileText, Users, X } from 'lucide-react';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const VisitorRegistration = () => {
   const [formData, setFormData] = useState({
@@ -45,7 +46,7 @@ const VisitorRegistration = () => {
       });
       if (videoRef.current) videoRef.current.srcObject = stream;
     } catch (err) {
-      alert("Please allow camera access.");
+      toast("Please allow camera access.");
       setIsCameraActive(false);
     }
   };
@@ -71,7 +72,7 @@ const VisitorRegistration = () => {
     e.preventDefault();
     // Validation: Now checking for hostId specifically
     if (!formData.name || !formData.number || !formData.url || !formData.hostId) {
-      alert("Please fill all required fields, select a host, and capture a photo.");
+    toast("Please fill all required fields, select a host, and capture a photo.");
       return;
     }
 
@@ -79,12 +80,12 @@ const VisitorRegistration = () => {
     try {
       const response = await axios.post(`http://localhost:2724/register`, formData);
       if (response.data.success) {
-        alert("Visit booked! Ref ID: " + response.data.data.refId);
+        toast("Visit booked! Ref ID: " + response.data.data.refId);
         // Reset form including hostId
         setFormData({ name: '', purpose: '', number: '', host: '', hostId: '', email: '', url: null });
       }
     } catch (error) {
-      alert(error.response?.data?.message || "Registration error.");
+      toast(error.response?.data?.message || "Registration error.");
     } finally {
       setLoading(false);
     }
@@ -150,7 +151,7 @@ const VisitorRegistration = () => {
 
           <InputField 
             icon={<Mail size={18}/>} 
-            label="Email (Optional)" 
+            label="Email (Mandatory)" 
             placeholder="john@example.com" 
             value={formData.email}
             onChange={(val) => setFormData({...formData, email: val})}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import SecurityStats from './SecurityStats';
 import QRScannerSection from '../Sections/QRScannerSection';
+import toast from 'react-hot-toast';
 
 const SecurityTerminal = () => {
   const [stats, setStats] = useState({ inside: 0, totalToday: 0, completed: 0 });
@@ -26,7 +27,7 @@ const SecurityTerminal = () => {
       }
     } catch (err) {
       const msg = err.response?.data?.message || "Movement update failed";
-      alert(msg);
+      toast(msg);
       throw new Error(msg); // Stops the scanner from closing the modal on error
     }
   };

@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 Link
 const Card = ({ title, desc, btn,link}) => {
   const navigate=useNavigate();

@@ -8,7 +8,7 @@ const LoginPage = () => {
     <>
      <Navbar opt1={"Home"} opt2={"Book"} opt3={"Status"} link1={"/"} link2={"/book"} link3={"/status"}/>
       <Login/>
-      <Footer/>
+      <Footer opt1={"Home"} opt2={"Book"} opt3={"Status"} link1={"/"} link2={"/book"} link3={"/status"}/>
     </>
   )
 }

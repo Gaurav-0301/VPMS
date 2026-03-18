@@ -12,7 +12,13 @@ const Navbar = (props) => {
   return (
     <div className="navbar bg-white text-black shadow-sm px-4 lg:px-10">
       <div className="navbar-start">
-        <Link to="/" className="btn btn-ghost text-xl font-black tracking-tighter">Gatekeeper</Link>
+        
+        <img 
+           src="/gatekeeperlogo.png" 
+           alt="Logo" 
+           className="w-15 h-9  object-cover mr-2" 
+        />
+        <Link to="/" className="brand-logo text-3xl font-extrabold tracking-tighter"> Gatekeeper</Link>
       </div>
       
       <div className="navbar-center hidden lg:flex">

@@ -46,3 +46,28 @@
   object-fit: cover !important;
 }
 
+.brand-logo {
+  font-family: 'Syne', sans-serif;
+  background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  transition: transform 0.3s ease;
+  letter-spacing: -0.05em;
+}
+
+.brand-logo:hover {
+  transform: scale(1.05);
+  filter: brightness(1.2);
+}
+
+/* Optional: Add a small dot after the name for a "Tech Startup" look */
+.brand-logo::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #10b981; /* Emerald green dot */
+  border-radius: 50%;
+  margin-left: 2px;
+}

@@ -3,6 +3,7 @@ import TabSwitcher from '../Components/TabSwitcher';
 import PendingView from '../Sections/PendingView';
 import HistoryView from '../Sections/HistoryView';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const HostPage = () => {
   const [visitors, setVisitors] = useState([]);
@@ -40,12 +41,12 @@ const HostPage = () => {
         );
         
         if (newStatus === "Approved") {
-          alert("Meeting approved! Mail sent to visitor.");
+        toast("Meeting approved! Mail sent to visitor.");
         }
       }
     } catch (error) {
       console.error("handleStatus error:", error);
-      alert("Failed to update status. Please try again.");
+      toast("Failed to update status. Please try again.");
     }
   };
 

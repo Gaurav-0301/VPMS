@@ -4,6 +4,7 @@ import Navbar from '../Components/Navbar'
 import StatusPage from '../Components/StatusPage'
 import Footer from '../Components/Footer'
 import axios from 'axios'
+import toast from 'react-hot-toast'
 
 const Status = () => {
   const[searchQuery,setSearchQuery]=useState("");
@@ -19,7 +20,7 @@ const Status = () => {
       console.log(result.data)
       setStatusData(result.data);
      }else{
-      alert(result.data);
+      toast(result.data);
       setStatusData(null);
      }
     } catch (error) {

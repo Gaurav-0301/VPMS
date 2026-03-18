@@ -30,9 +30,9 @@ const Footer = (props) => {
           <div className="space-y-4">
             <h4 className="font-semibold text-slate-900">Platform</h4>
             <ul className="space-y-2 text-sm text-slate-600">
-              <li><Link to={props.opt1} className="hover:text-indigo-600 transition-colors">Home</Link></li>
-              <li><Link to={props.opt2} className="hover:text-indigo-600 transition-colors">Book</Link></li>
-              <li><Link to={props.opt3} className="hover:text-indigo-600 transition-colors">Status</Link></li>
+              <li><Link to={props.link1} className="hover:text-indigo-600 transition-colors">{props.opt1}</Link></li>
+              <li><Link to={props.link2} className="hover:text-indigo-600 transition-colors">{props.opt2}</Link></li>
+              <li><Link to={props.link3} className="hover:text-indigo-600 transition-colors">{props.opt3}</Link></li>
             </ul>
           </div>
 
