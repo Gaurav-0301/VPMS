@@ -1,6 +1,6 @@
 import React from 'react';
 import Card from '../Components/Card';
-import VisitorRegistration from '../Components/VisitorRegistration';
+
 
 
 const Banner = () => {
