@@ -9,110 +9,118 @@ const dataURIToBuffer = (dataURI) => {
 };
 
 const sendPassEmail = async (visitor) => {
+    // 1. Setup Transporter first (Moved outside for clarity)
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: { 
+            user: process.env.EMAIL_USER, 
+            pass: process.env.EMAIL_PASS 
+        },
+        tls: {
+            rejectUnauthorized: false // Helps avoid handshake errors in production
+        }
+    });
+
+    // 2. Wrap in Promise correctly
     return new Promise(async (resolve, reject) => {
         try {
             // Data Setup
             const qrCodeDataUrl = await QRCode.toDataURL(visitor.refId, {
-    margin: 1,
-    width: 300, 
-    color: {
-        dark: '#1e293b', 
-        light: '#ffffff'
-    }
-});
+                margin: 1, width: 300, 
+                color: { dark: '#1e293b', light: '#ffffff' }
+            });
             const qrBuffer = dataURIToBuffer(qrCodeDataUrl);
             const photoBuffer = dataURIToBuffer(visitor.url);
             
-            // Format current date/time for the pass
             const timestamp = new Date().toLocaleString('en-IN', {
                 day: '2-digit', month: 'short', year: 'numeric',
                 hour: '2-digit', minute: '2-digit', hour12: true
             });
 
+            // Create PDF
             const doc = new PDFDocument({ size: [650, 400], margin: 0 });
             let buffers = [];
+            
             doc.on('data', buffers.push.bind(buffers));
             
+            // This event triggers when the PDF is fully generated
             doc.on('end', async () => {
-                const pdfData = Buffer.concat(buffers);
-                
-                const transporter = nodemailer.createTransport({
-                    service: 'gmail',
-                    auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
-                });
-
-                // --- ENHANCED EMAIL BODY ---
-                await transporter.sendMail({
-                    from: '"Gatekeeper System" <no-reply@gatekeeper.com>',
-                    to: visitor.email,
-                    subject: `✅ Pass Approved - ${visitor.refId}`,
-                    html: `
-                        <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 500px; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
-                            <h2 style="color: #059669; margin-top: 0;">Booking Successful!</h2>
-                            <p>Hi <b>${visitor.name}</b>,</p>
-                            <p>Your visit to meet <b>${visitor.host}</b> has been approved. Please find your digital pass attached to this email.</p>
-                            <div style="background: #f0fdf4; padding: 15px; border-radius: 5px; border-left: 4px solid #059669;">
-                                <strong>Instructions:</strong> Present the QR code in the attached PDF at the security gate for entry.
+                try {
+                    const pdfData = Buffer.concat(buffers);
+                    
+                    await transporter.sendMail({
+                        from: '"Gatekeeper System" <no-reply@gatekeeper.com>',
+                        to: visitor.email,
+                        subject: `✅ Pass Approved - ${visitor.refId}`,
+                        html: `
+                            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; line-height: 1.6; max-width: 500px; border: 1px solid #e2e8f0; padding: 25px; border-radius: 12px; background-color: #ffffff;">
+                                <h2 style="color: #059669; margin-top: 0; font-size: 24px;">Booking Successful!</h2>
+                                <p>Hi <b>${visitor.name}</b>,</p>
+                                <p>Your visit to meet <b>${visitor.host}</b> has been approved. Please find your digital pass attached.</p>
+                                <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border-left: 5px solid #059669; margin: 20px 0;">
+                                    <strong style="color: #065f46;">Entry Instructions:</strong><br/> 
+                                    Present the QR code in the attached PDF at the security gate for quick verification.
+                                </div>
+                                <p style="font-size: 11px; color: #94a3b8; margin-top: 30px; border-top: 1px solid #f1f5f9; pt: 10px;">
+                                    Issued by Gatekeeper VMS • ${timestamp}
+                                </p>
                             </div>
-                            <p style="font-size: 12px; color: #666; margin-top: 20px;">Issued on: ${timestamp}</p>
-                        </div>
-                    `,
-                    attachments: [{ filename: `VisitorPass_${visitor.refId}.pdf`, content: pdfData }]
-                });
-                resolve(true);
+                        `,
+                        attachments: [{ 
+                            filename: `VisitorPass_${visitor.refId}.pdf`, 
+                            content: pdfData 
+                        }]
+                    });
+                    resolve(true);
+                } catch (mailError) {
+                    console.error("Mail Error:", mailError);
+                    reject(mailError);
+                }
             });
 
-            // --- ENHANCED PDF DESIGN ---
-            
-            // Background Base
-            doc.rect(0, 0, 600, 350).fill('#ffffff');
-
-            // Header Section
-            doc.rect(0, 0, 600, 65).fill('#f1f5f9'); 
+            // --- PDF DESIGN ---
+            doc.rect(0, 0, 650, 400).fill('#ffffff');
+            doc.rect(0, 0, 650, 65).fill('#f1f5f9'); 
             doc.fillColor('#059669').fontSize(22).font('Helvetica-Bold').text('Status: Approved', 30, 22);
-            doc.fillColor('#64748b').fontSize(10).font('Helvetica').text(`ISSUED: ${timestamp}`, 400, 28, { align: 'right', width: 170 });
+            doc.fillColor('#64748b').fontSize(10).font('Helvetica').text(`ISSUED: ${timestamp}`, 450, 28, { align: 'right', width: 170 });
 
-            // Profile Photo with a slight "frame"
             if (photoBuffer) {
                 doc.save();
-                doc.fillColor('#e2e8f0').roundedRect(28, 88, 114, 114, 16).fill(); // border
+                doc.fillColor('#e2e8f0').roundedRect(28, 88, 114, 114, 16).fill(); 
                 doc.roundedRect(30, 90, 110, 110, 15).clip();
                 doc.image(photoBuffer, 30, 90, { width: 110, height: 110 });
                 doc.restore();
             }
 
-            // Visitor Details
             doc.fillColor('#1e293b').fontSize(22).font('Helvetica-Bold').text(visitor.name, 150, 100);
-            doc.fillColor('#3b82f6').fontSize(14).font('Helvetica').text(visitor.purpose ? visitor.purpose.toUpperCase() : 'MEETING', 165, 132);
+            doc.fillColor('#3b82f6').fontSize(14).font('Helvetica').text(visitor.purpose ? visitor.purpose.toUpperCase() : 'MEETING', 150, 132);
             
-            doc.fillColor('#94a3b8').fontSize(10).text('HOSTING OFFICER', 165, 175, { characterSpacing: 1 });
-            doc.fillColor('#1e293b').fontSize(18).font('Helvetica-Bold').text(visitor.host, 165, 190);
+            doc.fillColor('#94a3b8').fontSize(10).text('HOSTING OFFICER', 150, 175);
+            doc.fillColor('#1e293b').fontSize(18).font('Helvetica-Bold').text(visitor.host, 150, 190);
 
-            // Ref ID label
-            doc.fillColor('#94a3b8').fontSize(10).text('REF ID', 165, 225);
-            doc.fillColor('#475569').fontSize(12).font('Helvetica').text(visitor.refId, 165, 240);
+            doc.fillColor('#94a3b8').fontSize(10).text('REF ID', 150, 225);
+            doc.fillColor('#475569').fontSize(12).font('Helvetica').text(visitor.refId, 150, 240);
 
-            // Enhanced Dashed QR Box
             doc.save();
             doc.strokeColor('#10b981').lineWidth(1.5).dash(6, { space: 4 });
-            doc.roundedRect(340, 90, 230, 220, 20).stroke();
+            doc.roundedRect(380, 90, 230, 220, 20).stroke();
             doc.restore(); 
 
             if (qrBuffer) {
-                doc.image(qrBuffer, 385, 115, { width: 140 });
+                doc.image(qrBuffer, 425, 115, { width: 140 });
             }
 
-            // Footer of QR Box
-            doc.fillColor('#059669').fontSize(13).font('Helvetica-Bold').text('AUTHORIZED ACCESS', 340, 265, { align: 'center', width: 230 });
-            doc.fillColor('#64748b').fontSize(9).font('Helvetica').text('Scan at Security Entry', 340, 285, { align: 'center', width: 230 });
+            doc.fillColor('#059669').fontSize(13).font('Helvetica-Bold').text('AUTHORIZED ACCESS', 380, 265, { align: 'center', width: 230 });
+            doc.fillColor('#64748b').fontSize(9).font('Helvetica').text('Scan at Security Entry', 380, 285, { align: 'center', width: 230 });
 
-            // Bottom Brand Strip
-            doc.rect(0, 330, 340, 20).fill('#0f172a');
-            doc.fillColor('#ffffff').fontSize(8).text('GATEKEEPER - VISITOR MANAGEMENT SYSTEM', 20, 337);
-            
-            doc.fillColor('#94a3b8').fontSize(8).text(`VALID UNTIL: ${new Date().toLocaleDateString('en-IN')} | 11:59 PM`, 30, 310);
+            doc.rect(0, 380, 650, 20).fill('#0f172a');
+            doc.fillColor('#ffffff').fontSize(8).text('GATEKEEPER - VISITOR MANAGEMENT SYSTEM', 20, 387);
+            doc.fillColor('#94a3b8').fontSize(8).text(`VALID UNTIL: ${new Date().toLocaleDateString('en-IN')} | 11:59 PM`, 30, 360);
 
-            doc.end();
+            doc.end(); // This triggers the doc.on('end') above
         } catch (error) {
             reject(error);
         }
