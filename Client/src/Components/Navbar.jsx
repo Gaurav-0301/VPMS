@@ -5,9 +5,16 @@ const Navbar = (props) => {
   const isAuthenticated = localStorage.getItem("token");
 
   const handleLogout = () => {
-    localStorage.clear(); // Clears token, role, userId, and userName
-    window.location.href = "/login"; // Force refresh to reset app state
-  };
+    // 1. Remove the token and user data
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    // 2. Show a nice toast notification
+    toast.success("See you soon!");
+
+    // 3. Redirect to login or home
+    window.location.href = "/login"; 
+};
 
   return (
     <div className="navbar bg-white text-black shadow-sm px-4 lg:px-10">
