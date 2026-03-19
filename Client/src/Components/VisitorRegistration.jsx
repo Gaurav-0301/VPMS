@@ -25,7 +25,7 @@ const VisitorRegistration = () => {
   useEffect(() => {
     const fetchHosts = async () => {
       try {
-        const response = await axios.get(" ${API}/staffdata");
+        const response = await axios.get(`https://gatekeeper-05sf.onrender.com/staffdata`);
         if (response.data.success) {
           const hostsOnly = response.data.data.filter(staff => staff.role === 'Host');
           setAvailableHosts(hostsOnly);
