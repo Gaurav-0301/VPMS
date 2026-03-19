@@ -1,19 +1,21 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = (props) => {
+  const navigate=useNavigate();
   const isAuthenticated = localStorage.getItem("token");
 
   const handleLogout = () => {
-    // 1. Remove the token and user data
+    
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
-    // 2. Show a nice toast notification
+   
     toast.success("See you soon!");
 
-    // 3. Redirect to login or home
-    window.location.href = "/login"; 
+    
+    navigate("/login"); 
 };
 
   return (
