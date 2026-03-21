@@ -22,27 +22,29 @@ const updatedVisitor = await reg.findByIdAndUpdate(
     }
 
     
+
+
 if (status === "Approved") {
-   
-    console.log(`Generating pass for Visitor: ${updatedVisitor.refId}`);
-    
-     await sendPassEmail(updatedVisitor)
-        .then(() => res.json({
-          messgae:`✅ Email sent successfully to ${updatedVisitor.email}`
-}))
-        .catch((err) => {
-          res.json({
-          messgae:(`❌ PDF/Email Error for ${updatedVisitor.refId}:`, err.message)
-})
-           
-        });
+    try {
+        console.log("Starting Email Generation for:", updatedVisitor.refId);
+        
+        
+        await sendPassEmail(updatedVisitor);
+        
+        console.log("✅ Email sent successfully");
+    } catch (err) {
+       
+        console.error("❌ PDF/Email Generation Error:", err.message);
+        
+    }
 }
 
-    return res.status(200).json({
-      success: true,
-      message: `Status updated to ${status} successfully`,
-      data: updatedVisitor
-    });
+
+return res.status(200).json({
+    success: true,
+    message: `Status updated to ${status} and email sent.`,
+    data: updatedVisitor
+});
 
   } catch (error) {
     return res.status(500).json({
