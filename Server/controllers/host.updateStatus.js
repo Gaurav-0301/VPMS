@@ -28,7 +28,7 @@ const updateStatus = async (req, res) => {
       
        sendPassEmail(updatedVisitor);
         
-        console.log(`[Gatekeeper] ✅ Email sent successfully to ${updatedVisitor.email}`);
+        console.log(`[Gatekeeper] ✅ Email Generating in process...will be sent with in a min !!`);
       } catch (err) {
         
         console.error(`[Gatekeeper] ❌ PDF/Email Generation Error:`, err.message);
