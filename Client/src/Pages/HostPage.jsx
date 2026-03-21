@@ -31,7 +31,7 @@ const HostPage = () => {
 
   const handleStatusUpdate = async (id, newStatus) => {
     try {
-      const response = await axios.put(`http://localhost:2724/statusupdate/${id}`, { 
+      const response = await axios.put(`https://gatekeeper-05sf.onrender.com/statusupdate/${id}`, { 
         status: newStatus 
       });
 
