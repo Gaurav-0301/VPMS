@@ -11,24 +11,29 @@ const dataURIToBuffer = (dataURI) => {
 const sendPassEmail = async (visitor) => {
     
    const transporter = nodemailer.createTransport({
-    service: 'gmail',
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
+    port: 587,
+    secure: false, 
     auth: { 
         user: process.env.EMAIL_USER, 
         pass: process.env.EMAIL_PASS 
     },
-    
+  
     family: 4, 
+   
+    connectionTimeout: 10000, 
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
     tls: {
-        rejectUnauthorized: false
+        rejectUnauthorized: false,
+        
+        servername: 'smtp.gmail.com'
     }
 });
-    // 2. Wrap in Promise correctly
+    
     return new Promise(async (resolve, reject) => {
         try {
-            // Data Setup
+            
             const qrCodeDataUrl = await QRCode.toDataURL(visitor.refId, {
                 margin: 1, width: 300, 
                 color: { dark: '#1e293b', light: '#ffffff' }
