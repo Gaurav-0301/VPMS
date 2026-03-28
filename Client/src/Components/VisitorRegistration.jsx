@@ -1,221 +1,201 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, User, Phone, Mail, FileText, Users, X } from 'lucide-react';
 import axios from 'axios';
-import toast from 'react-hot-toast';
-const API = import.meta.env.VITE_API_URL;
+const API =import.meta.env.API
+import { Camera, User, Phone, Mail, BookOpen, Users, RefreshCcw } from 'lucide-react';
+
 const VisitorRegistration = () => {
+  // 1. State Management: Storing form data in one simple object
   const [formData, setFormData] = useState({
     name: '',
-    purpose: '',
     number: '',
-    host: '',   // Host Name (String)
-    hostId: '', // Host ID (MongoDB ObjectId) - THIS FIXES THE ERROR
-    email: '',
-    url: null 
+    purpose: '',
+    hostId: '',
+    hostName: '',
+    email: ''
   });
 
-  const [availableHosts, setAvailableHosts] = useState([]);
-  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [photo, setPhoto] = useState(null);
+  const [hosts, setHosts] = useState([]);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
+  // 2. Refs: Accessing the HTML video and canvas elements directly
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // Fetch all staff and filter for Hosts
+  // 3. Fetch Staff: Get the list of hosts from your backend
   useEffect(() => {
-    const fetchHosts = async () => {
+    const fetchStaff = async () => {
       try {
-        const response = await axios.get(`https://gatekeeper-05sf.onrender.com/staffdata`);
-        if (response.data.success) {
-          const hostsOnly = response.data.data.filter(staff => staff.role === 'Host');
-          setAvailableHosts(hostsOnly);
+        const res = await axios.get(`${API}/staffdata`);
+        if (res.data.success) {
+          // Filtering to only show people who can host visitors
+          setHosts(res.data.data.filter(p => p.role === 'Host'));
         }
-      } catch (error) {
-        console.error("Failed to load hosts:", error);
+      } catch (err) {
+        console.error("Error fetching staff:", err);
       }
     };
-    fetchHosts();
+    fetchStaff();
+    return () => stopCamera(); // Cleanup on close
   }, []);
 
+  // 4. Camera Logic: Start the webcam
   const startCamera = async () => {
-    setIsCameraActive(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "user" }, 
+        video: { facingMode: "user" }, // Front camera
         audio: false 
       });
-      if (videoRef.current) videoRef.current.srcObject = stream;
+      setIsStreaming(true);
+      // Wait a split second for React to show the <video> tag
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
+      }, 150);
     } catch (err) {
-      toast("Please allow camera access.");
-      setIsCameraActive(false);
+      alert("Please allow camera access in your browser settings.");
     }
   };
 
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      setIsStreaming(false);
+    }
+  };
+
+  // 5. Capture Logic: Take the photo
   const capturePhoto = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (video && canvas) {
-      const context = canvas.getContext('2d');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = canvas.toDataURL('image/png');
-      setFormData({ ...formData, url: imageData });
+      const ctx = canvas.getContext('2d');
       
-      const stream = video.srcObject;
-      stream.getTracks().forEach(track => track.stop());
-      setIsCameraActive(false);
+      // Mirroring the image so it looks natural
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      setPhoto(canvas.toDataURL('image/png'));
+      stopCamera();
     }
   };
 
-  const handleVisit = async (e) => {
+  // 6. Submit Logic: Send everything to the backend
+  const handleRegister = async (e) => {
     e.preventDefault();
-    // Validation: Now checking for hostId specifically
-    if (!formData.name || !formData.number || !formData.url || !formData.hostId) {
-    toast.error("Please fill all required fields, select a host, and capture a photo.");
-      return;
-    }
+    if (!photo) return alert("A visitor photo is required!");
 
     setLoading(true);
     try {
-      const response = await axios.post(` https://gatekeeper-05sf.onrender.com/register`, formData);
-    
-      if (response.data.success) {
-        toast.success("Visit booked! Ref ID: " + response.data.data.refId);
-        // Reset form including hostId
-        setFormData({ name: '', purpose: '', number: '', host: '', hostId: '', email: '', url: null });
+      const res = await axios.post(`${API}/register`, {
+        ...formData,
+        url: photo
+      });
+      if (res.data.success) {
+        alert("Success! Reference ID: " + res.data.data.refId);
+        // Reset form for next user
+        setFormData({ name: '', number: '', purpose: '', hostId: '', hostName: '', email: '' });
+        setPhoto(null);
       }
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Registration error.");
+    } catch (err) {
+      alert("Registration failed. Please check your connection.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="my-5 max-w-4xl mx-auto p-6 text-black bg-white rounded-3xl shadow-sm border border-slate-100 font-sans">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Visitor Registration</h2>
-        <X className="text-slate-400 cursor-pointer hover:text-slate-600" />
-      </div>
-
-      <form onSubmit={handleVisit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <InputField 
-            icon={<User size={18}/>} 
-            label="Full Name" 
-            placeholder="John Doe" 
-            value={formData.name}
-            onChange={(val) => setFormData({...formData, name: val})}
-          />
-          <InputField 
-            icon={<FileText size={18}/>} 
-            label="Purpose of Visit" 
-            placeholder="Meeting, Delivery, etc." 
-            value={formData.purpose}
-            onChange={(val) => setFormData({...formData, purpose: val})}
-          />
-          <InputField 
-            icon={<Phone size={18}/>} 
-            label="Phone Number" 
-            placeholder="10-digit number" 
-            value={formData.number}
-            onChange={(val) => setFormData({...formData, number: val})}
-          />
+    <div className="h-screen w-full bg-gray-100 flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-5xl rounded-3xl shadow-xl flex flex-col md:flex-row overflow-hidden h-[85vh]">
+        
+        {/* Left Side: Form */}
+        <div className="flex-1 p-10 overflow-y-auto">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Visitor Registration</h2>
           
-          {/* UPDATED DYNAMIC HOST DROPDOWN */}
-          <div className="space-y-1.5">
-             <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                <Users size={18}/> Select Host
-             </label>
-             <select 
-               required
-               value={formData.hostId} 
-               onChange={(e) => {
-                 const selectedHost = availableHosts.find(h => h._id === e.target.value);
-                 setFormData({
-                   ...formData, 
-                   hostId: e.target.value, 
-                   host: selectedHost ? selectedHost.name : '' 
-                 });
-               }}
-               className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
-             >
-                <option value="">Select an employee</option>
-                {availableHosts.map((host) => (
-                  <option key={host._id} value={host._id}>
-                    {host.name} ({host.dept})
-                  </option>
-                ))}
-             </select>
-          </div>
+          <form onSubmit={handleRegister} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <InputField label="Full Name" icon={<User size={16}/>} value={formData.name} onChange={v => setFormData({...formData, name: v})} />
+              <InputField label="Phone Number" icon={<Phone size={16}/>} value={formData.number} onChange={v => setFormData({...formData, number: v})} />
+            </div>
 
-          <InputField 
-            icon={<Mail size={18}/>} 
-            label="Email (Mandatory)" 
-            placeholder="john@example.com" 
-            value={formData.email}
-            onChange={(val) => setFormData({...formData, email: val})}
-          />
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold text-gray-500 uppercase ml-1">Select Host</label>
+              <select 
+                required className="p-3 bg-gray-50 border rounded-xl outline-none focus:border-blue-500"
+                value={formData.hostId} 
+                onChange={e => {
+                  const h = hosts.find(x => x._id === e.target.value);
+                  setFormData({...formData, hostId: e.target.value, hostName: h?.name || ''});
+                }}
+              >
+                <option value="">-- Choose Employee --</option>
+                {hosts.map(h => <option key={h._id} value={h._id}>{h.name} ({h.dept})</option>)}
+              </select>
+            </div>
+
+            <InputField label="Purpose of Visit" icon={<BookOpen size={16}/>} value={formData.purpose} onChange={v => setFormData({...formData, purpose: v})} />
+            <InputField label="Email Address" icon={<Mail size={16}/>} type="email" value={formData.email} onChange={v => setFormData({...formData, email: v})} />
+
+            <button 
+              type="submit" disabled={loading}
+              className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-700 disabled:bg-gray-400 mt-4 transition"
+            >
+              {loading ? "Registering..." : "Complete Registration"}
+            </button>
+          </form>
         </div>
 
-        {/* Camera Section */}
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-            <Camera size={18}/> Capture Photo
-          </label>
-          <div className="relative aspect-video bg-slate-100 rounded-2xl overflow-hidden flex items-center justify-center border-2 border-dashed border-slate-300">
-            {!formData.url && !isCameraActive && (
-              <button type="button" onClick={startCamera} className="bg-[#00A36C] text-white px-6 py-2 rounded-lg flex items-center gap-2 hover:bg-[#008f5d] transition-all font-semibold">
-                <Camera size={18}/> Start Camera
+        {/* Right Side: Camera */}
+        <div className="w-full md:w-[40%] bg-gray-900 flex flex-col items-center justify-center p-8 border-l border-gray-800">
+          <div className="w-full aspect-square max-w-[280px] bg-gray-800 rounded-full border-4 border-gray-700 overflow-hidden flex items-center justify-center relative shadow-inner">
+            {photo ? (
+              <img src={photo} alt="Visitor" className="w-full h-full object-cover" />
+            ) : isStreaming ? (
+              <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover scale-x-[-1]" />
+            ) : (
+              <Camera size={48} className="text-gray-600" />
+            )}
+          </div>
+
+          <div className="mt-6">
+            {!isStreaming && !photo && (
+              <button onClick={startCamera} className="bg-white text-black px-6 py-2 rounded-full font-bold text-sm">Open Camera</button>
+            )}
+            {isStreaming && (
+              <button onClick={capturePhoto} className="bg-green-500 text-white px-8 py-2 rounded-full font-bold text-sm shadow-lg">Capture Selfie</button>
+            )}
+            {photo && (
+              <button onClick={() => { setPhoto(null); startCamera(); }} className="text-gray-400 flex items-center gap-2 text-sm font-medium">
+                <RefreshCcw size={14} /> Try Again
               </button>
             )}
-            
-            {isCameraActive && (
-              <>
-                <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover scale-x-[-1]" />
-                <button type="button" onClick={capturePhoto} className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#00A36C] text-white px-6 py-2 rounded-lg flex items-center gap-2 hover:bg-[#008f5d] font-semibold">
-                  <Camera size={18}/> Capture Snapshot
-                </button>
-              </>
-            )}
-
-            {formData.url && (
-              <div className="relative w-full h-full">
-                <img src={formData.url} alt="Captured" className="w-full h-full object-cover" />
-                <button type="button" onClick={() => setFormData({...formData, url: null})} className="absolute top-2 right-2 p-2 bg-white/90 rounded-full text-red-500 shadow-sm hover:bg-white">
-                  <X size={18}/>
-                </button>
-              </div>
-            )}
-            <canvas ref={canvasRef} className="hidden" />
           </div>
+          <canvas ref={canvasRef} className="hidden" />
+          <p className="mt-4 text-gray-500 text-[10px] uppercase tracking-widest font-bold">Security Verification</p>
         </div>
 
-        <button 
-          type="submit"
-          disabled={loading}
-          className={`w-full md:col-span-2 mt-4 py-4 ${loading ? 'bg-slate-400' : 'bg-blue-600 hover:bg-blue-700'} text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-100`}
-        >
-          {loading ? "Registering..." : "Book Visit"}
-        </button>
-      </form>
+      </div>
     </div>
   );
 };
 
-const InputField = ({ icon, label, placeholder, value, onChange }) => (
-  <div className="space-y-1.5">
-    <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+// Sub-component for clean code
+const InputField = ({ label, icon, value, onChange, type = "text" }) => (
+  <div className="flex flex-col gap-1 flex-1">
+    <label className="text-xs font-bold text-gray-500 uppercase ml-1 flex items-center gap-2">
       {icon} {label}
     </label>
     <input 
-      required={label !== "Email (Optional)"}
-      type="text" 
-      value={value || ''}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder} 
-      className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:text-slate-400"
+      type={type} required value={value} 
+      onChange={e => onChange(e.target.value)} 
+      className="p-3 bg-gray-50 border rounded-xl outline-none focus:border-blue-500 transition" 
+      placeholder={`Enter ${label.toLowerCase()}`}
     />
   </div>
 );
