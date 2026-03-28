@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-const API =import.meta.env.API
+
 import { Camera, User, Phone, Mail, BookOpen, Users, RefreshCcw } from 'lucide-react';
 
 const VisitorRegistration = () => {
@@ -27,7 +27,7 @@ const VisitorRegistration = () => {
   useEffect(() => {
     const fetchStaff = async () => {
       try {
-        const res = await axios.get(`${API}/staffdata`);
+        const res = await axios.get(`https://gatekeeper-05sf.onrender.com/staffdata`);
         if (res.data.success) {
           // Filtering to only show people who can host visitors
           setHosts(res.data.data.filter(p => p.role === 'Host'));
@@ -93,7 +93,7 @@ const VisitorRegistration = () => {
 
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/register`, {
+      const res = await axios.post(`https://gatekeeper-05sf.onrender.com/register`, {
         ...formData,
         url: photo
       });
